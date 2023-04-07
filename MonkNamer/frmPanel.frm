@@ -128,8 +128,8 @@ Private Sub Timer1_Timer()
                 Text1.Text = strString
                 Call Macro.Execute
                 'zoom to newly named or not
-                If Check1.Enabled = True Then
-                    Macro.Cmd = "targ " & strNorn & " sys: camt dde: panc"
+                If Check1.Value = 1 Then
+                    Macro.Cmd = "targ " & strNorn & " sys: camt"
                     Call Macro.Execute
                 End If
             End If
