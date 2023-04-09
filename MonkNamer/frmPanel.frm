@@ -73,8 +73,8 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
 Dim Creatures As Object
-Dim Interval, intMonk, indx As Integer
-Dim strMonk, strString, strNorn, strHex, arrSplitString() As String
+Dim Interval As Integer
+Dim arrSplitString() As String
 Dim Macro As CMacro
 
 Private Sub Form_Load()
@@ -98,7 +98,7 @@ Private Sub Timer1_Timer()
     Interval = Interval + 1
     'Text1.Text = Interval
     If (Interval > 2000) Then
-        Macro.Cmd = "enum 4 1 0 dde: putv targ dde: putv monk dde: getb cnam next"
+        Macro.Cmd = "doif totl 4 0 0 gt 0 enum 4 0 0 dde: putv targ dde: putv monk dde: getb cnam next endi"
         Call Macro.Execute
         
         If (Macro.result <> "") Then
@@ -109,12 +109,21 @@ Private Sub Timer1_Timer()
             Text1.Text = "No data returned from host."
         End If
         
+        'vars moved here so they get cleared properly even if errors
+        Dim intMonk, indx As Integer
+        Dim strMonk, strString, strNorn, strHex As String
+        
         For indx = LBound(arrSplitString) To UBound(arrSplitString)
             If arrSplitString(indx) = "<UnNamed>" Then
                 'Get UnNamed's Moniker
                 strMonk = arrSplitString(indx - 1)
                 'Get UnNamed's UNID
                 strNorn = arrSplitString(indx - 2)
+                'zoom to newly named or not
+                If Check1.Value = 1 Then
+                    Macro.Cmd = "targ " & strNorn & " setv norn targ dde: panc"
+                    Call Macro.Execute
+                End If
                 'Moniker string -> int
                 intMonk = Val(strMonk)
                 'Moniker numbers -> hex string
@@ -127,20 +136,17 @@ Private Sub Timer1_Timer()
                 Macro.Cmd = "targ " & strNorn & " dde: putb [" & strString & "] cnam"
                 Text1.Text = strString
                 Call Macro.Execute
-                'zoom to newly named or not
-                If Check1.Value = 1 Then
-                    Macro.Cmd = "targ " & strNorn & " sys: camt"
-                    Call Macro.Execute
-                End If
+                'To name 1 at a time, if multiple unnameds found at once
+                Exit For
             End If
         Next
-        
         Interval = 0
     End If
 Exit Sub
     
 ErrorHandler:
-    Call MsgBox("Unknown error", vbCritical Or vbOKOnly)
-    Text1.Text = "Could not execute macro."
+    Call MsgBox("Connection to the game was interrupted.", vbCritical Or vbOKOnly)
+    Text1.Text = "Error!"
+    Macro.Cmd = ""
     Interval = 0
 End Sub
