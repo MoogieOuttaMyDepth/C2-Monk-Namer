@@ -137,6 +137,7 @@ Private Sub Timer1_Timer()
                 Text1.Text = strString
                 Call Macro.Execute
                 'To name 1 at a time, if multiple unnameds found at once
+                Interval = 0
                 Exit For
             End If
         Next
